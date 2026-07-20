@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS device_telemetry (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    device_id TEXT NOT NULL,
+    drift_index REAL NOT NULL,
+    status TEXT NOT NULL
+);

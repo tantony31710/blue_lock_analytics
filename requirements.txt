@@ -5,6 +5,7 @@ pydantic>=2.7
 pandas>=2.2
 scikit-learn>=1.5
 joblib>=1.4
+psycopg2-binary>=2.9
 pytest>=8.0
 bcrypt>=4.1
 python-jose[cryptography]>=3.3

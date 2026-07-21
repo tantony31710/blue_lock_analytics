@@ -99,13 +99,49 @@ Open the printed local URL (usually `http://localhost:5173`).
 - `tests/` — pytest suite for the scoring logic and storage layer.
 - `frontend/` — React + Vite dashboard.
 
+## Deploying (Vercel + Supabase)
+
+Two separate Vercel projects — don't try to combine them, that's what
+caused config errors originally:
+
+**Backend** (repo root):
+1. Vercel → New Project → import this repo → **Root Directory: `.`**
+2. Framework preset: FastAPI (auto-detected via `app/main.py`)
+3. Environment variables:
+   - `DATABASE_URL` — your Supabase connection string. Use the
+     **connection pooler** (port 6543, transaction mode), not the
+     direct connection — serverless functions open many short-lived
+     connections and the pooler is built for that. Find it in
+     Supabase → Project Settings → Database → Connection string.
+   - `JWT_SECRET_KEY`, `DEVICE_API_KEY` — the same random values you generated for local use
+   - `ALLOWED_ORIGINS` — your frontend's Vercel URL once you have it (comma-separated if more than one)
+4. Deploy.
+
+**Frontend** (separate project):
+1. Vercel → New Project → import the same repo → **Root Directory: `frontend`**
+2. Framework preset: Vite (auto-detected)
+3. Environment variable: `VITE_API_BASE` = your backend's Vercel URL
+4. Deploy.
+
+Then go back to the backend project's `ALLOWED_ORIGINS` and set it to
+the frontend URL you just got, redeploy the backend.
+
+**Known limits of this setup**: WebSocket support on Vercel is in
+public beta — connections auto-close after `maxDuration` (60s here)
+and the client reconnects (already handled in `scripts/simulate_client.py`
+and would need the same in any real device firmware). State isn't
+shared between function instances, which is exactly why this migrated
+to Postgres instead of relying on SQLite.
+
 ## Status / next steps
 
 Done: one backend framework, no placeholder modules, tests for the
 logic that matters, idempotent schema migrations, JWT auth for the
-dashboard + API-key auth for devices.
+dashboard + API-key auth for devices, CI, Postgres-backed production
+deploy on Vercel + Supabase.
 
-Not yet done (next passes): CI (run tests on every push), a real
-deployment target, rate limiting on the login endpoint, and honest
-versions of the deep-learning/GenAI pieces once there's a real use
-case for them.
+Not yet done: Row Level Security policies on the Supabase tables
+(currently off — safe today since only the backend connects directly,
+but worth adding as defense-in-depth), rate limiting on the login
+endpoint, and honest versions of the deep-learning/GenAI pieces once
+there's a real use case for them.

@@ -6,19 +6,22 @@ Usage:
     python -m scripts.generate_mock_data --rows 200000
 """
 import argparse
-import os
 import random
-import sqlite3
 import time
 
-DB_PATH = os.environ.get("TELEMETRY_DB_PATH", "telemetry_grid.db")
+from app.db import adapt_query, get_connection
+
 DEVICE_IDS = ["DEV-ALPHA", "DEV-BRAVO", "DEV-CHARLIE", "DEV-DELTA", "DEV-ECHO"]
 
 
 def generate(target_rows: int, batch_size: int = 25000) -> None:
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     base_time = time.time() - (30 * 24 * 60 * 60)  # 30 days back
+
+    insert_query = adapt_query(
+        "INSERT INTO device_telemetry (timestamp, device_id, drift_index, status) VALUES (?, ?, ?, ?)"
+    )
 
     batch = []
     for i in range(target_rows):
@@ -28,19 +31,13 @@ def generate(target_rows: int, batch_size: int = 25000) -> None:
         batch.append((record_time, random.choice(DEVICE_IDS), drift, status))
 
         if len(batch) >= batch_size:
-            cursor.executemany(
-                "INSERT INTO device_telemetry (timestamp, device_id, drift_index, status) VALUES (?, ?, ?, ?)",
-                batch,
-            )
+            cursor.executemany(insert_query, batch)
             conn.commit()
             print(f"[MOCK DATA] {i + 1:,}/{target_rows:,} rows written")
             batch = []
 
     if batch:
-        cursor.executemany(
-            "INSERT INTO device_telemetry (timestamp, device_id, drift_index, status) VALUES (?, ?, ?, ?)",
-            batch,
-        )
+        cursor.executemany(insert_query, batch)
         conn.commit()
 
     print("[MOCK DATA] Done.")

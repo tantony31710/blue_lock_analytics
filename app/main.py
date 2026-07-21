@@ -21,11 +21,14 @@ from app.storage import StorageManager
 
 app = FastAPI(title="Blue Lock Analytics", version="1.0.0")
 
-# Frontend runs on a different port (Vite dev server) — allow it to call this API.
-# Tighten allow_origins to your real frontend URL before deploying publicly.
+# Frontend runs on a different origin — allow it to call this API.
+# Defaults cover local dev; set ALLOWED_ORIGINS (comma-separated) in
+# production to your real deployed frontend URL(s).
+_default_origins = "http://localhost:5173,http://127.0.0.1:5173"
+allowed_origins = os.environ.get("ALLOWED_ORIGINS", _default_origins).split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

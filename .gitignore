@@ -1,3 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
 node_modules/
-_pycache__/
-.vscode/
+dist/
+.DS_Store
+*.egg-info/

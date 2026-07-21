@@ -9,10 +9,13 @@ import json
 import os
 from typing import List
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field
 
+from app.auth import authenticate_user, create_access_token, get_current_username
+from app.device_auth import verify_device_key, verify_device_key_ws
 from app.math_engine import calculate_vector_drift
 from app.storage import StorageManager
 
@@ -54,8 +57,20 @@ def read_root():
     return {"status": "online", "system": "Blue Lock Analytics"}
 
 
+@app.post("/api/auth/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(db_manager, form_data.username, form_data.password)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    token = create_access_token(user["username"])
+    return {"access_token": token, "token_type": "bearer"}
+
+
 @app.websocket("/stream/telemetry")
 async def websocket_endpoint(websocket: WebSocket):
+    if not verify_device_key_ws(websocket):
+        await websocket.close(code=4401)  # custom close code = unauthorized
+        return
     await websocket.accept()
     try:
         while True:
@@ -73,7 +88,7 @@ async def websocket_endpoint(websocket: WebSocket):
         pass
 
 
-@app.post("/api/v1/telemetry")
+@app.post("/api/v1/telemetry", dependencies=[Depends(verify_device_key)])
 def receive_telemetry(payload: TelemetryPayload):
     frame = score_payload(payload)
     db_manager.save_telemetry_frame(frame)
@@ -88,7 +103,7 @@ def _query_view(view_name: str) -> List[dict]:
 
 
 @app.get("/api/analytics/daily-health")
-def get_daily_health():
+def get_daily_health(username: str = Depends(get_current_username)):
     try:
         return {"status": "success", "data": _query_view("view_daily_device_health")}
     except Exception as err:
@@ -96,7 +111,7 @@ def get_daily_health():
 
 
 @app.get("/api/analytics/watchlist")
-def get_watchlist():
+def get_watchlist(username: str = Depends(get_current_username)):
     try:
         return {"status": "success", "data": _query_view("view_critical_risk_watchlist")}
     except Exception as err:
@@ -104,7 +119,7 @@ def get_watchlist():
 
 
 @app.get("/api/analytics/drift-spikes")
-def get_drift_spikes():
+def get_drift_spikes(username: str = Depends(get_current_username)):
     try:
         return {"status": "success", "data": _query_view("view_hourly_drift_spikes")}
     except Exception as err:

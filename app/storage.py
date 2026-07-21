@@ -38,3 +38,22 @@ class StorageManager:
 
     def close(self) -> None:
         self.connection.close()
+
+    # ---- user accounts (dashboard login) ----
+
+    def create_user(self, username: str, hashed_password: str) -> None:
+        self.cursor.execute(
+            "INSERT INTO users (username, hashed_password) VALUES (?, ?);",
+            (username, hashed_password),
+        )
+        self.connection.commit()
+
+    def get_user(self, username: str) -> Dict[str, Any] | None:
+        self.cursor.execute(
+            "SELECT id, username, hashed_password FROM users WHERE username = ?;",
+            (username,),
+        )
+        row = self.cursor.fetchone()
+        if row is None:
+            return None
+        return {"id": row[0], "username": row[1], "hashed_password": row[2]}

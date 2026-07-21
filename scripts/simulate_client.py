@@ -5,6 +5,7 @@ live traffic for local testing.
 """
 import asyncio
 import json
+import os
 import random
 import time
 
@@ -12,13 +13,16 @@ import websockets
 
 GATEWAY_URL = "ws://127.0.0.1:8000/stream/telemetry"
 DEVICE_IDS = ["DEV-ALPHA", "DEV-BRAVO", "DEV-CHARLIE"]
+DEVICE_API_KEY = os.environ.get("DEVICE_API_KEY", "dev-only-insecure-device-key")
 
 
 async def stream_forever():
     while True:
         try:
             print("[CLIENT] Connecting to gateway...")
-            async with websockets.connect(GATEWAY_URL) as ws:
+            async with websockets.connect(
+                GATEWAY_URL, additional_headers={"x-api-key": DEVICE_API_KEY}
+            ) as ws:
                 print("[CLIENT] Connected. Streaming...")
                 while True:
                     payload = {

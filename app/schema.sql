@@ -4,6 +4,14 @@
 -- to run on every startup without wiping existing data.
 -- =====================================================================
 
+-- 0. Dashboard user accounts (JWT login)
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    hashed_password TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 1. Raw ingested telemetry (one row per received frame)
 CREATE TABLE IF NOT EXISTS device_telemetry (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

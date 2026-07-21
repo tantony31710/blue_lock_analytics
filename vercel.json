@@ -8,7 +8,7 @@
   "regions": ["iad1"],
   "functions": {
     "api/index.py": {
-      "runtime": "python@3.9"
+      "runtime": "vercel/python@4.2.1"
     }
   },
   "rewrites": [

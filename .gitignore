@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 __pycache__/
 *.pyc
 .venv/
@@ -7,3 +8,19 @@ node_modules/
 dist/
 .DS_Store
 *.egg-info/
+=======
+# Python
+__pycache__/
+*.pyc
+*.db
+
+# Node
+node_modules/
+
+# Virtual Environments
+.venv/
+venv/
+
+# IDE
+.vscode/
+>>>>>>> 03bb09388a7358a79f7e23d2506e3e1b2433c892

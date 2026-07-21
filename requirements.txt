@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 fastapi>=0.111
 uvicorn[standard]>=0.30
 websockets>=12.0
@@ -6,3 +7,13 @@ pandas>=2.2
 scikit-learn>=1.5
 joblib>=1.4
 pytest>=8.0
+=======
+fastapi
+uvicorn
+pydantic
+scikit-learn
+pandas
+joblib
+pytest
+mangum
+>>>>>>> 03bb09388a7358a79f7e23d2506e3e1b2433c892

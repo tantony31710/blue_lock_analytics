@@ -6,8 +6,11 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Updated to point to consolidated FastAPI server on port 8000
-    fetch('http://127.0.0.1:8000/api/analytics/watchlist')
+    // Use environment variable for API URL, fallback to localhost for development
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const endpoint = `${apiUrl}/api/analytics/watchlist`;
+    
+    fetch(endpoint)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
@@ -34,7 +37,7 @@ export default function App() {
       {error && (
         <div style={{ background: '#450a0a', border: '1px solid #991b1b', padding: '15px', borderRadius: '8px', color: '#fca5a5' }}>
           <strong>Connection Error:</strong> {error}
-          <p style={{ fontSize: '0.8em', marginTop: '10px' }}>Ensure the FastAPI backend is running on port 8000.</p>
+          <p style={{ fontSize: '0.8em', marginTop: '10px' }}>Ensure the FastAPI backend is running on port 8000 or check environment configuration.</p>
         </div>
       )}
 

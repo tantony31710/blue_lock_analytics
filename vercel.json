@@ -6,11 +6,6 @@
     "VITE_API_URL": ""
   },
   "regions": ["iad1"],
-  "functions": {
-    "api/index.py": {
-      "runtime": "vercel/python@4.2.1"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
